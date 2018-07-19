@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>Tic Tac Toe</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body style='background-color: black'>
+  <div id='main' align='center'>
+    <h1 style='text-align: center; color: white'>Tic Tac Toe</h1>
+  </div>
+
+  <div id='lobby' style='display: block' align='center'>
+    <table style='background-color: white; width: 600px; height: 400px'>
+      <tr v-for='game in lobby'>
+        <td id='gameID' style='background-color: orange'>{{game.id}}</td>
+        <td style='background-color: blue'><button onclick="joinGame(game.id)">Join Game {{game.id}}</button></td>
+      </tr>
+      <tr style='height: 100px; width: 100%'>
+        <td colspan='2'><button style='height: 100%; width: 100%; background-color: aqua' onclick="createGame()">Create New Game</button></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id='mainGame' style='display: none' align='center'>
+    <table style='height: 300px; width: 300px; background-color: white'>
+      <tr>
+        <td id='0' style='height: 100px; width: 100px; background-color: orange'>
+        </td>
+        <td id='1' style='height: 100px; width: 100px'>
+        </td>
+        <td id='2' style='height: 100px; width: 100px; background-color: orange'>
+        </td>
+      </tr>
+      <tr>
+        <td id='3' style='height: 100px; width: 100px'>
+        </td>
+        <td id='4' style='height: 100px; width: 100px; background-color: orange'>
+        </td>
+        <td id='5' style='height: 100px; width: 100px'>
+        </td>
+      </tr>
+      <tr>
+        <td id='6' style='height: 100px; width: 100px; background-color: orange'>
+        </td>
+        <td id='7' style='height: 100px; width: 100px'>
+        </td>
+        <td id='8' style='height: 100px; width: 100px; background-color: orange'>
+        </td>
+      </tr>
+    </table>
+
+    <p style='text-align: center; color: red'>Click on a square to start playing!</p>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="./client/game.js"></script>
+</body>
+
+</html>
