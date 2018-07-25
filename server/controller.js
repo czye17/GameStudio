@@ -8,42 +8,96 @@ var lobby = {};
 var activeGames = {};
 
 Controller.init = function (io) {
-  io.on('connection', function(socket){
+  io.on('connection', function (socket) {
     console.log('a user connected');
 
     socket.emit('newGameCreated', lobby);
     if (players[socket.id]) {
       players[socket.id].connected = true;
     } else {
-      console.log("Created:", socket.id);
       players[socket.id] = {
         inGame: false,
-        connected:true,
+        connected: true,
         game: null,
         address: socket
       };
     }
-    
-    socket.on('disconnect', function(){
+
+    socket.on('disconnect', function () {
       console.log('user disconnected');
       players[socket.id].connected = false;
     });
 
-    socket.on('ticMove', function(move) {
+    socket.on('ticMove', function (move) {
       var player = socket.id;
       var game = activeGames[players[player].game];
-      var row = move.row;
-      var col = move.col;
+      var row = move.row, col = move.col;
       if (tictactoe.isValidMove(game, player, row, col)) {
-        socket.emit('validTicMove', )
+        if (player === game.p1) {
+          game.board[row][col] = 'X';
+        } else {
+          game.board[row][col] = 'O';
+        }
+        game.turn = 1 - game.turn;
+        if (!game.computer) {
+          players[game.p1].address.emit('validTicMove', game);
+          players[game.p2].address.emit('validTicMove', game);
+        }
+
+        if (ticEnd(game, player)) { return; }
+
+        if (game.computer) {
+          var compMove = tictactoe.makeComputerMove(game);
+          game.turn = 1 - game.turn;
+          game.board[compMove.row][compMove.col] = 'O';
+          players[game.p1].address.emit('validTicMove', game);
+          ticEnd(game, 'COMPUTER');
+        }
       } else {
         socket.emit('invalidTicMove');
       }
     });
 
+    var ticEnd = function (game, player) {
+      var end = tictactoe.isOver(game, player);
+      if (end) {
+        if (end === 'TIE') {
+          players[game.p1].address.emit('ticTie');
+          if (!game.computer) {
+            players[game.p2].address.emit('ticTie', player);
+          }
+        } else {
+          players[game.p1].address.emit('ticGameOver', player);
+          if (!game.computer) {
+            players[game.p2].address.emit('ticGameOver', player);
+          }
+        }
+        return true;
+      }
+      return false;
+    }
+
     socket.on('createGame', function (gameData) {
       if (players[socket.id].inGame) {
         socket.emit('invalidGameCreate', socket.id);
+      } else if (gameData.computer) {
+        players[socket.id].game = socket.id;
+        players[socket.id].inGame = true;
+        activeGames[socket.id] = {
+          p1: socket.id,
+          p2: 'COMPUTER',
+          computer: true,
+          name: gameData.name,
+          type: gameData.type,
+          turn: 0,
+          board: [['', '', ''], ['', '', ''], ['', '', '']]
+        };
+
+        var data = {
+          lobby: lobby,
+          game: activeGames[socket.id]
+        };
+        socket.emit('gameStarted', data);
       } else {
         players[socket.id].game = socket.id;
         players[socket.id].inGame = true;
@@ -52,7 +106,7 @@ Controller.init = function (io) {
           name: gameData.name,
           type: gameData.type
         }
-        
+
         socket.emit('newGameCreated', lobby);
       }
     });
@@ -66,10 +120,11 @@ Controller.init = function (io) {
         activeGames[id] = {
           p1: id,
           p2: socket.id,
+          computer: false,
           name: lobby[id].name,
           type: lobby[id].type,
           turn: 0,
-          board: [['','',''],['','',''],['','','']]
+          board: [['', '', ''], ['', '', ''], ['', '', '']]
         };
         lobby[id] = undefined;
 
@@ -80,6 +135,21 @@ Controller.init = function (io) {
         players[id].address.emit('gameStarted', data);
         socket.emit('gameStarted', data);
       }
+    });
+    
+    socket.on('gameComplete', function () {
+      var game = activeGames[players[socket.id].game];
+      var p1 = game.p1;
+      var p2 = game.p2;
+      if (!game.computer) {
+        players[p2].game = null;
+        players[p2].inGame = false;
+      }
+      activeGames[p1.game] = undefined;
+      players[p1].inGame = false;
+      players[p1].game = null;
+
+      console.log(players[p1]);
     });
   });
 };

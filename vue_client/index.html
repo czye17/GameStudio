@@ -29,15 +29,21 @@
       <tr style='background-color: darkblue; height: 100px; width: 100%'>
         <td colspan='4' style='height: 0%; width: 100%; background-color: darkblue' align='center'>
           <select v-model="gameType">
-            <option disabled value="">Please select one</option>
+            <option disabled value="">Choose a Game.</option>
             <option>TicTacToe</option>
             <option>Connect4</option>
             <option>Snake</option>
           </select>
           <br>
+          <select v-model="computer">
+            <option disabled value="">Single or MultiPlayer?</option>
+            <option>SinglePlayer</option>
+            <option>MultiPlayer</option>
+          </select>
+          <br>
           <input v-model="name" placeholder="game name">
           <br>
-          <button v-on:click="createGame(name, gameType)">Create New Game</button>
+          <button v-on:click="createGame(name, gameType, computer)">Create New Game</button>
         </td>
       </tr>
     </table>
@@ -51,42 +57,23 @@
             <table style='height: 300px; width: 300px; background-color: white; margin-left: auto; margin-right: auto'>
               <tr v-for='(row, rowIndex) in board'>
                 <td v-for='(square, index) in row' v-on:click='makeMove(rowIndex, index)'>
-                  <div v-if='(rowIndex + index) % 2 === 0' style='height: 100px; width: 100px; background-color: orange'>{{square}}</div>
-                  <div v-else style='height: 100px; width: 100px'>{{square}}</div>
+                  <div v-if='(rowIndex + index) % 2 === 0' style='height: 100px; width: 100px; background-color: orange; text-align: center'>{{square}}</div>
+                  <div v-else style='height: 100px; width: 100px; text-align: center'>{{square}}</div>
                 </td>
               </tr>
             </table>
-            <!-- <table style='height: 300px; width: 300px; background-color: white; float: center'>
-              <tr>
-                <td id='0' style='height: 100px; width: 100px; background-color: orange'>
-                </td>
-                <td id='1' style='height: 100px; width: 100px'>
-                </td>
-                <td id='2' style='height: 100px; width: 100px; background-color: orange'>
-                </td>
-              </tr>
-              <tr>
-                <td id='3' style='height: 100px; width: 100px'>
-                </td>
-                <td id='4' style='height: 100px; width: 100px; background-color: orange'>
-                </td>
-                <td id='5' style='height: 100px; width: 100px'>
-                </td>
-              </tr>
-              <tr>
-                <td id='6' style='height: 100px; width: 100px; background-color: orange'>
-                </td>
-                <td id='7' style='height: 100px; width: 100px'>
-                </td>
-                <td id='8' style='height: 100px; width: 100px; background-color: orange'>
-                </td>
-              </tr>
-            </table> -->
             <p style='text-align: center; color: red'>Click on a square to start playing!</p>
+            <p style='text-align: center; color: red'>Game: {{gameType}}</p>
+            <p style='text-align: center; color: white'>It is {{turn}}'s turn.</p>
           </td>
           <td style='text-align: center; color: white'>Player 2 (O):<br>{{playerTwo}}</div>
       </tr>
     </table>
+
+    <br>
+    <br>
+
+    <button v-on:click="gameComplete(gameType)">Return to Lobby</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
