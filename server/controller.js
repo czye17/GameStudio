@@ -7,6 +7,18 @@ var players = {};
 var lobby = {};
 var activeGames = {};
 
+var getBoard = function (type) {
+  var board;
+  if (type === 'TicTacToe') {
+    board = [['', '', ''], ['', '', ''], ['', '', '']];
+  } else if (type === 'Snake') {
+    board = [10, 10];
+  } else {
+    board = [['', '', ''], ['', '', ''], ['', '', '']]
+  }
+  return board;
+}
+
 Controller.init = function (io) {
   io.on('connection', function (socket) {
     console.log('a user connected');
@@ -83,6 +95,7 @@ Controller.init = function (io) {
       } else if (gameData.computer) {
         players[socket.id].game = socket.id;
         players[socket.id].inGame = true;
+        var gameBoard = getBoard(gameData.type);
         activeGames[socket.id] = {
           p1: socket.id,
           p2: 'COMPUTER',
@@ -90,14 +103,14 @@ Controller.init = function (io) {
           name: gameData.name,
           type: gameData.type,
           turn: 0,
-          board: [['', '', ''], ['', '', ''], ['', '', '']]
+          board: gameBoard
         };
-
         var data = {
           lobby: lobby,
           game: activeGames[socket.id]
         };
         socket.emit('gameStarted', data);
+        console.log("GAME STARTED:", activeGames);
       } else {
         players[socket.id].game = socket.id;
         players[socket.id].inGame = true;
@@ -141,15 +154,17 @@ Controller.init = function (io) {
       var game = activeGames[players[socket.id].game];
       var p1 = game.p1;
       var p2 = game.p2;
+      var type = game.type;
+      console.log(type);
+      players[p1].address.emit('gameEnded', type);
       if (!game.computer) {
         players[p2].game = null;
         players[p2].inGame = false;
+        players[p2].address.emit('gameEnded', type);
       }
-      activeGames[p1.game] = undefined;
+      activeGames[players[p1].game] = undefined;
       players[p1].inGame = false;
       players[p1].game = null;
-
-      console.log(players[p1]);
     });
   });
 };

@@ -110,7 +110,6 @@ Minimax.findBestMove = function (board, turn) {
           }
           bestValue = currMove;
         }
-        console.log(bestValue);
   
         if (bestValue === 10) {
           return bestMove;
@@ -119,7 +118,6 @@ Minimax.findBestMove = function (board, turn) {
   
     }
   }
-  console.log(bestMove);
   return bestMove;
 }
 

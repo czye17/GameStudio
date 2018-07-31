@@ -15,7 +15,7 @@ var lobby = new Vue({
         alert('Must Choose Game Type and Set Name.');
       } else {
         var single = false;
-        if (computer === 'SinglePlayer') {
+        if (computer === 'SinglePlayer' || gameType === 'Snake') {
           single = true;
         }
         var gameData = {
@@ -29,7 +29,7 @@ var lobby = new Vue({
     joinGame: function(id) {
       console.log("ID:", id);
       socket.emit('joinGame', id);
-    }
+    },
   }
 });
 
@@ -50,16 +50,28 @@ var tictactoe = new Vue({
       }
       socket.emit('ticMove', move);
     },
-    gameComplete: function (gameType) {
+    gameComplete: function () {
       socket.emit('gameComplete');
-      if (gameType === 'TicTacToe') {
-        tictactoe.playerOne = '';
-        tictactoe.playerTwo = '';
-        tictactoe.board = '';
-        tictactoe.turn = '';
-        flipTicTacToe();
-      }
     }
+  }
+});
+
+var snake = new Vue({
+  el: '#snake',
+  data: {
+    snake: [],
+    player: '',
+    board: '',
+    gameType: 'Snake'
+  }
+});
+
+socket.on('gameEnded', function (type) {
+  console.log('type:', type);
+  if (type === 'TicTacToe') {
+    flipTicTacToe();
+  } else if (type === 'Snake') {
+    flipSnake();
   }
 });
 
@@ -73,8 +85,9 @@ socket.on('invalidGameCreate', function () {
 
 socket.on('gameStarted', function (data) {
   lobby.lobby = data.lobby;
-  
+
   var type = data.game.type;
+  console.log(type);
   if (type === 'TicTacToe') {
     tictactoe.playerOne = data.game.p1;
     tictactoe.playerTwo = data.game.p2;
@@ -85,6 +98,10 @@ socket.on('gameStarted', function (data) {
       tictactoe.turn = data.game.p2;
     }
     flipTicTacToe();
+  }
+
+  if (type === 'Snake') {
+    flipSnake();
   }
 });
 
@@ -112,6 +129,18 @@ socket.on('ticTie', function () {
 
 function flipTicTacToe() {
   var game = document.getElementById("tictactoe");
+  var board = document.getElementById("lobby");
+  if (game.style.display === "none") {
+      game.style.display = "block";
+      board.style.display = "none";
+  } else {
+      game.style.display = "none";
+      board.style.display = "block";
+  }
+}
+
+function flipSnake() {
+  var game = document.getElementById("snake");
   var board = document.getElementById("lobby");
   if (game.style.display === "none") {
       game.style.display = "block";
