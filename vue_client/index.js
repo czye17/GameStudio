@@ -1,79 +1,22 @@
 var socket = io();
 
-var lobby = new Vue({
-  el: '#lobby',
-  data: {
-    lobby: {},
-    gameType: '',
-    name: '',
-    computer: ''
-  },
-  methods: {
-    createGame: function(name, gameType, computer) {
-      var validTypes = ['TicTacToe', 'Connect4', 'Snake'];
-      if (!validTypes.includes(gameType) || name === '') {
-        alert('Must Choose Game Type and Set Name.');
-      } else {
-        var single = false;
-        if (computer === 'SinglePlayer' || gameType === 'Snake') {
-          single = true;
-        }
-        var gameData = {
-          type: gameType,
-          name: name,
-          computer: single
-        }
-        socket.emit('createGame', gameData);
-      }
-    },
-    joinGame: function(id) {
-      console.log("ID:", id);
-      socket.emit('joinGame', id);
-    },
-  }
+socket.on('loginFailed', function () {
+  alert("Username or Password Incorrect. Create an Account With Same Information?");
 });
 
-var tictactoe = new Vue({
-  el: '#tictactoe',
-  data: {
-    playerOne: '',
-    playerTwo: '',
-    board: '',
-    turn: '',
-    gameType: 'TicTacToe'
-  },
-  methods: {
-    makeMove: function(row, col) {
-      var move = {
-        row: row,
-        col: col
-      }
-      socket.emit('ticMove', move);
-    },
-    gameComplete: function () {
-      socket.emit('gameComplete');
-    }
-  }
+socket.on('loginSuccess', function () {
+  enterWeb();
+  alert("Login Successful!");
 });
 
-var snake = new Vue({
-  el: '#snake',
-  data: {
-    snake: [],
-    player: '',
-    board: '',
-    gameType: 'Snake'
-  }
+socket.on('accountCreated', function () {
+  alert("Account Created! Login!");
 });
 
-socket.on('gameEnded', function (type) {
-  console.log('type:', type);
-  if (type === 'TicTacToe') {
-    flipTicTacToe();
-  } else if (type === 'Snake') {
-    flipSnake();
-  }
-});
+socket.on('usernameTaken', function () {
+  alert("Username Taken. Try Again.");
+  login.username = '';
+})
 
 socket.on('newGameCreated', function (newLobby) {
   lobby.lobby = newLobby;
@@ -105,6 +48,16 @@ socket.on('gameStarted', function (data) {
   }
 });
 
+socket.on('gameEnded', function (type) {
+  console.log('type:', type);
+  if (type === 'TicTacToe') {
+    flipTicTacToe();
+  } else if (type === 'Snake') {
+    flipSnake();
+  }
+});
+
+
 socket.on('validTicMove', function (data) {
   tictactoe.board = data.board;
   console.log(data);
@@ -127,26 +80,3 @@ socket.on('ticTie', function () {
   alert("Game Over. Tie.");
 });
 
-function flipTicTacToe() {
-  var game = document.getElementById("tictactoe");
-  var board = document.getElementById("lobby");
-  if (game.style.display === "none") {
-      game.style.display = "block";
-      board.style.display = "none";
-  } else {
-      game.style.display = "none";
-      board.style.display = "block";
-  }
-}
-
-function flipSnake() {
-  var game = document.getElementById("snake");
-  var board = document.getElementById("lobby");
-  if (game.style.display === "none") {
-      game.style.display = "block";
-      board.style.display = "none";
-  } else {
-      game.style.display = "none";
-      board.style.display = "block";
-  }
-}

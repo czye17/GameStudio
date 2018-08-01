@@ -15,7 +15,34 @@
     <h1 style='text-align: center; color: white'>Ye Tac Toe</h1>
   </div>
 
-  <div id='lobby' style='display: block' align='center'>
+  <div id='login' style='margin: 0 auto; display: block; z-index: -1; width: 400px; height: 400px; background-color: powderblue'
+    align='center'>
+    <br>
+    <h2>LOGIN</h2>
+    <p>
+      <input v-model="username" placeholder="enter username">
+      <input v-model="password" placeholder="enter password">
+    </p>
+    <p>
+        <button style='background-color: skyblue' v-on:click="login(username, password)">Login</button>
+    </p>
+    <hr>
+    <h2>CREATE NEW ACCOUNT</h2>
+    <p>USERNAME:
+      <input v-model="username" placeholder="enter username">
+    </p>
+    <p>PASSWORD:
+      <input v-model="password" placeholder="enter password">
+    </p>
+    <p>NAME:
+      <input v-model="name" placeholder="enter your screen name">
+    </p>
+    <p>
+        <button style='background-color: skyblue' v-on:click="createUser(username, password, name)">Create Account</button>
+    </p>
+  </div>
+
+  <div id='lobby' style='display: none' align='center'>
     <table style='background-color: orangered; width: 800px; height: 600px'>
       <tr v-for='game in lobby' v-if='game !== undefined'>
         <td id='gameID'>
@@ -89,6 +116,8 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="./vue_client/index.js"></script>
+  <script type="text/javascript" src="./vue_client/indexVue.js"></script>
+  <script type="text/javascript" src="./vue_client/indexHelpers.js"></script>
 </body>
 
 </html>

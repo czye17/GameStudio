@@ -1,8 +1,10 @@
 var tictactoe = require('./tictactoe.js');
+var userController = require('./userController.js');
+var lobbyController = require('./lobbyController.js');
 
 var Controller = {};
 
-// usually a database
+// mongo collections
 var players = {};
 var lobby = {};
 var activeGames = {};
@@ -19,9 +21,33 @@ var getBoard = function (type) {
   return board;
 }
 
+var ticEnd = function (game, player) {
+  var end = tictactoe.isOver(game, player);
+  if (end) {
+    if (end === 'TIE') {
+      players[game.p1].address.emit('ticTie');
+      if (!game.computer) {
+        players[game.p2].address.emit('ticTie', player);
+      }
+    } else {
+      players[game.p1].address.emit('ticGameOver', player);
+      if (!game.computer) {
+        players[game.p2].address.emit('ticGameOver', player);
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+
+Controller.dataInit = function (url, db) {
+  userController.init(url, db);
+  lobbyController.init(url, db);
+};
+
 Controller.init = function (io) {
   io.on('connection', function (socket) {
-    console.log('a user connected');
 
     socket.emit('newGameCreated', lobby);
     if (players[socket.id]) {
@@ -36,8 +62,17 @@ Controller.init = function (io) {
     }
 
     socket.on('disconnect', function () {
-      console.log('user disconnected');
+      userController.disconnect(socket.id);
       players[socket.id].connected = false;
+    });
+
+    socket.on('loginRequest', function (loginInfo) {
+      userController.login(loginInfo, socket);
+    });
+
+    socket.on('newAccount', async function (accountInfo) {
+      console.log(accountInfo);
+      userController.createUser(accountInfo, socket);
     });
 
     socket.on('ticMove', function (move) {
@@ -69,25 +104,6 @@ Controller.init = function (io) {
         socket.emit('invalidTicMove');
       }
     });
-
-    var ticEnd = function (game, player) {
-      var end = tictactoe.isOver(game, player);
-      if (end) {
-        if (end === 'TIE') {
-          players[game.p1].address.emit('ticTie');
-          if (!game.computer) {
-            players[game.p2].address.emit('ticTie', player);
-          }
-        } else {
-          players[game.p1].address.emit('ticGameOver', player);
-          if (!game.computer) {
-            players[game.p2].address.emit('ticGameOver', player);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
 
     socket.on('createGame', function (gameData) {
       if (players[socket.id].inGame) {
@@ -149,7 +165,7 @@ Controller.init = function (io) {
         socket.emit('gameStarted', data);
       }
     });
-    
+
     socket.on('gameComplete', function () {
       var game = activeGames[players[socket.id].game];
       var p1 = game.p1;
