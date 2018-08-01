@@ -1,9 +1,0 @@
-version: '2'
-services:
-  web:
-    container_name: gamestudio_web
-    build: .
-    ports:
-     - "4040:4040"
-    volumes:
-     - .:/app
