@@ -8,12 +8,16 @@ var port = 4040;
 
 app.use('/vue_client', express.static(__dirname + '/vue_client'));
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.sendFile(__dirname + '/vue_client/index.html');
+});
+
+app.get('/snake', function (req, res) {
+  res.sendFile(__dirname + '/vue_client/snake.html');
 });
 
 controller.init(io);
 
-http.listen(port, function(){
+http.listen(port, function () {
   console.log('listening on *:4040');
 });
