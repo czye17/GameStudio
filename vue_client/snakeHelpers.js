@@ -53,7 +53,7 @@ function updatePosition() {
 function foodInSnake() {
   var head = snake;
   while (head !== undefined) {
-    if (hitTestRectangle(snake, head)) {
+    if (hitTestRectangle(food, head)) {
       return true;
     }
     head = head.next;
@@ -82,10 +82,18 @@ function newGame() {
     app.stage.removeChild(body);
     body = body.next;
   }
+
   tail = snake;
   tail.lastX = snake.x;
   tail.lastY = snake.y;
-  food.x = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
-  food.y = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
+  
+  do {
+    food.x = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
+    food.y = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
+  } while (!foodInSnake())
+
   length = 1;
+  velocity = 1;
+  scoreString = "SCORE: " + length;
+  scoreBoard.text = scoreString;
 }

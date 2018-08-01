@@ -27,7 +27,7 @@ document.body.appendChild(app.view);
 loader.add(["vue_client/images/cat.png", "vue_client/images/apple.jpg"]).load(setup);
 
 var snake, food, state, tail, length, scoreString, scoreBoard;
-var velocity = 2;
+var velocity = 1;
 var EPSILON = 0.01;
 
 var half = Math.floor(numBlocks / 2);
@@ -53,14 +53,14 @@ function setup() {
   food.height = blockSize;
   food.anchor.set(0.5, 0.5);
 
-  // Start New Game
-  newGame();
-
   // initialize ScoreBoard
   scoreString = "SCORE:" + length;
   scoreBoard = new Text(scoreString, scoreStyle);
   scoreBoard.position.set(canvasWidth / 2, canvasHeight / 2);
   scoreBoard.anchor.set(0.5, 0.5);
+
+  // Start New Game
+  newGame();
 
   // add children to stage
   app.stage.addChild(scoreBoard);
@@ -117,10 +117,20 @@ function play(delta) {
   var gridY = Math.round(snake.y / blockSize) * blockSize - blockSize / 2;
 
   // if food is eaten
-  if (hitTestRectangle(snake, food)) {
+  if (collision(snake, food)) {
     length += 1;
     if (length === maxSize) {
       win();
+    }
+
+    if (length === 5) {
+      velocity = 2;
+    } else if (length === 10) {
+      velocity = 4;
+    } else if (length === 50) {
+      velocity = 8;
+    } else if (length === 100) {
+      velocity = 16;
     }
 
     scoreString = "SCORE: " + length;
@@ -133,7 +143,7 @@ function play(delta) {
     do {
       food.x = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
       food.y = Math.floor(Math.random() * numBlocks) * blockSize + blockSize / 2;
-    } while (!foodInSnake())
+    } while (foodInSnake())
   } else {
     food.tint = 0xffffff;
   }
@@ -148,7 +158,7 @@ function play(delta) {
   // check for losing conditions
   var body = snake.next;
   while (body !== undefined) {
-    if (hitTestRectangle(snake, body)) {
+    if (collision(snake, body)) {
       lose();
     }
     body = body.next;
